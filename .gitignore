@@ -1,0 +1,25 @@
+# Documentación interna — se distribuye por canal separado
+docs/
+
+# Archivos de configuración local del editor
+.claude/settings.local.json
+
+# Zips de distribución
+*.zip
+
+# Dependencias (si se instala SignalR localmente)
+node_modules/
+package-lock.json
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Variables de entorno (nunca subir tokens o credenciales)
+.env
+.env.*
+*.env
+
+# Logs locales
+*.log

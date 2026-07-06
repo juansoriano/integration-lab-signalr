@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bingo WebSocket Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ──────────────── PANEL DE CONEXIÓN ──────────────── -->
+  <div id="panel-conexion" class="panel-conexion">
+    <div class="conexion-card">
+      <h1>🎱 Bingo Demo</h1>
+      <p class="subtitulo">Conexión a GameRes SignalR Hub</p>
+
+      <label>URL base de la API</label>
+      <input id="api-base" type="text" value="https://localhost:5000" placeholder="https://localhost:5000" />
+
+      <label>Token de acceso</label>
+      <textarea id="token-input" rows="3" placeholder="Pegue aquí el token (Bearer o txa_...)"></textarea>
+
+      <label>Código de sorteo (opcional)</label>
+      <input id="lottery-code" type="text" placeholder="Ej: JABV-001" />
+
+      <button id="btn-conectar" class="btn-primary" onclick="app.conectar()">Conectar</button>
+      <div id="msg-conexion" class="msg-estado"></div>
+    </div>
+  </div>
+
+  <!-- ──────────────── DASHBOARD PRINCIPAL ──────────────── -->
+  <div id="dashboard" class="dashboard oculto">
+
+    <!-- Header -->
+    <header class="header">
+      <span class="header-titulo">🎱 Bingo Demo</span>
+      <span id="estado-conexion" class="badge badge-conectado">Conectado</span>
+      <span id="header-url" class="header-url"></span>
+      <button class="btn-sm btn-danger" onclick="app.desconectar()">Desconectar</button>
+    </header>
+
+    <div class="layout">
+
+      <!-- ── COLUMNA IZQUIERDA: Lobby ── -->
+      <aside class="sidebar">
+        <h2>Lobby</h2>
+        <div id="lista-sorteos" class="lista-sorteos">
+          <p class="placeholder">Esperando datos del lobby...</p>
+        </div>
+      </aside>
+
+      <!-- ── COLUMNA CENTRAL: Sorteo activo ── -->
+      <main class="main-content">
+
+        <div id="seccion-sin-sorteo" class="sin-sorteo">
+          <p>Seleccione un sorteo del lobby o ingrese un código arriba para suscribirse.</p>
+          <div class="input-row">
+            <input id="lottery-code-dash" type="text" placeholder="Código del sorteo" />
+            <button class="btn-primary" onclick="app.suscribirSorteo()">Suscribirse</button>
+          </div>
+        </div>
+
+        <div id="seccion-sorteo" class="oculto">
+
+          <div class="sorteo-header">
+            <span id="sorteo-codigo" class="sorteo-codigo"></span>
+            <span id="sorteo-estado" class="badge"></span>
+            <button class="btn-sm" onclick="app.desuscribirSorteo()">Salir del sorteo</button>
+          </div>
+
+          <div class="sorteo-stats">
+            <div class="stat"><span class="stat-label">Bolas cantadas</span><span id="stat-posicion" class="stat-valor">0</span></div>
+            <div class="stat"><span class="stat-label">Tarjetas vendidas</span><span id="stat-tarjetas" class="stat-valor">—</span></div>
+            <div class="stat"><span class="stat-label">Monto total</span><span id="stat-monto" class="stat-valor">—</span></div>
+          </div>
+
+          <!-- Tablero de bingo 5x15 (B I N G O) -->
+          <div class="tablero-wrapper">
+            <h3>Tablero</h3>
+            <div id="tablero-bingo" class="tablero-bingo"></div>
+          </div>
+
+          <!-- Bolas cantadas en orden -->
+          <div class="bolas-wrapper">
+            <h3>Bolas cantadas <span id="bola-actual" class="bola-destacada"></span></h3>
+            <div id="bolas-cantadas" class="bolas-cantadas"></div>
+          </div>
+
+          <!-- Jugadas -->
+          <div class="jugadas-wrapper">
+            <h3>Jugadas</h3>
+            <div id="jugadas-grid" class="jugadas-grid"></div>
+          </div>
+
+        </div>
+      </main>
+
+      <!-- ── COLUMNA DERECHA: Log de eventos ── -->
+      <aside class="sidebar sidebar-log">
+        <div class="log-header">
+          <h2>Eventos</h2>
+          <button class="btn-sm" onclick="app.limpiarLog()">Limpiar</button>
+        </div>
+        <div id="log-eventos" class="log-eventos"></div>
+      </aside>
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
