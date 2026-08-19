@@ -1,4 +1,4 @@
-# 🎱 GameRes LotteryHub — WebSocket Demo
+# 🎱 integration-lab-signalr
 
 Demo de integración con el hub SignalR de GameRes para sorteos de Bingo en tiempo real.  
 Creado como referencia práctica para integradores que necesiten conectarse al hub `/lotteryHub`.
