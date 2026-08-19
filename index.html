@@ -10,22 +10,39 @@
 
   <!-- ──────────────── PANEL DE CONEXIÓN ──────────────── -->
   <div id="panel-conexion" class="panel-conexion">
-    <div class="conexion-card">
+    <form class="conexion-card" onsubmit="app.conectar(); return false;">
       <h1>🎱 Bingo Demo</h1>
       <p class="subtitulo">Conexión a GameRes SignalR Hub</p>
 
-      <label>URL base de la API</label>
-      <input id="api-base" type="text" value="https://localhost:5000" placeholder="https://localhost:5000" />
+      <label for="api-base">URL base de GameRes</label>
+      <input id="api-base" type="url" value="https://localhost:5000" placeholder="https://localhost:5000" autocomplete="url" />
 
-      <label>Token de acceso</label>
-      <textarea id="token-input" rows="3" placeholder="Pegue aquí el token (Bearer o txa_...)"></textarea>
+      <div class="auth-tabs" role="tablist" aria-label="Método de acceso">
+        <button id="tab-login" class="auth-tab activo" type="button" role="tab" aria-selected="true" aria-controls="panel-login" onclick="app.cambiarModoAcceso('login')">Usuario y clave</button>
+        <button id="tab-token" class="auth-tab" type="button" role="tab" aria-selected="false" aria-controls="panel-token" onclick="app.cambiarModoAcceso('token')">Token</button>
+      </div>
 
-      <label>Código de sorteo (opcional)</label>
-      <input id="lottery-code" type="text" placeholder="Ej: JABV-001" />
+      <div id="panel-login" class="auth-panel" role="tabpanel" aria-labelledby="tab-login">
+        <label for="username-input">Usuario</label>
+        <input id="username-input" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" />
 
-      <button id="btn-conectar" class="btn-primary" onclick="app.conectar()">Conectar</button>
+        <label for="password-input">Clave</label>
+        <input id="password-input" name="password" type="password" autocomplete="current-password" />
+        <p class="auth-ayuda">El demo inicia sesión en GameRes y usa el token solo en memoria.</p>
+      </div>
+
+      <div id="panel-token" class="auth-panel oculto" role="tabpanel" aria-labelledby="tab-token">
+        <label for="token-input">Token de acceso</label>
+        <textarea id="token-input" rows="3" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Pegue aquí el token (Bearer o txa_...)"></textarea>
+        <p class="auth-ayuda">Use esta opción para un token ya emitido, incluido un Transaction Access Token <code>txa_</code>.</p>
+      </div>
+
+      <label for="lottery-code">Código o GID de sorteo (opcional)</label>
+      <input id="lottery-code" type="text" placeholder="Ej: 4808169 o un UUID" />
+
+      <button id="btn-conectar" class="btn-primary" type="submit">Iniciar sesión y conectar</button>
       <div id="msg-conexion" class="msg-estado"></div>
-    </div>
+    </form>
   </div>
 
   <!-- ──────────────── DASHBOARD PRINCIPAL ──────────────── -->
@@ -43,7 +60,10 @@
 
       <!-- ── COLUMNA IZQUIERDA: Lobby ── -->
       <aside class="sidebar">
-        <h2>Lobby</h2>
+        <div class="lobby-header">
+          <h2>Lobby</h2>
+          <button id="btn-refrescar-lobby" class="btn-sm" onclick="app.refrescarLobby()">Refrescar</button>
+        </div>
         <div id="lista-sorteos" class="lista-sorteos">
           <p class="placeholder">Esperando datos del lobby...</p>
         </div>
@@ -53,11 +73,12 @@
       <main class="main-content">
 
         <div id="seccion-sin-sorteo" class="sin-sorteo">
-          <p>Seleccione un sorteo del lobby o ingrese un código arriba para suscribirse.</p>
+          <p>Seleccione un sorteo del lobby o ingrese su código o GID para suscribirse.</p>
           <div class="input-row">
-            <input id="lottery-code-dash" type="text" placeholder="Código del sorteo" />
+            <input id="lottery-code-dash" type="text" placeholder="Código o GID del sorteo" />
             <button class="btn-primary" onclick="app.suscribirSorteo()">Suscribirse</button>
           </div>
+          <div id="msg-sorteo" class="msg-estado"></div>
         </div>
 
         <div id="seccion-sorteo" class="oculto">

@@ -14,9 +14,9 @@ Una app web vanilla (sin frameworks, sin bundler) que:
 - Permite suscribirse a un sorteo y ver:
   - Tablero B-I-N-G-O con bolas cantadas resaltadas
   - Cronómetro de cuenta regresiva hasta el inicio del sorteo
-  - Jugadas activas (Línea 1, Línea 2, Esquinas, etc.)
+  - Jugadas activas (Línea 1, Línea 2, Esquinas, etc.), tarjetas ganadoras y próximas a ganar
   - Log en vivo de todos los eventos SignalR
-- Actualiza el estado del lobby automáticamente al recibir `LotteryStatusChanged`
+- Actualiza el estado del lobby automáticamente al recibir `LobbyLotteryStatusChanged`
 
 ## Por qué existe este repo
 
@@ -54,17 +54,28 @@ python -m http.server 8080
 # Instalar extensión Live Server → clic derecho en index.html → Open with Live Server
 ```
 
-Abrir `http://localhost:<puerto>` en el browser, ingresar la URL del hub y el token de acceso.
+Abrir `http://localhost:<puerto>` en el browser e ingresar la URL base de GameRes.
 
 ---
 
 ## Uso
 
-1. **Ingresar la URL base** de la API (ej: `https://tu-servidor/`)
-2. **Pegar el token** de acceso (Bearer o `txa_...`)
-3. Clic en **Conectar** — la app se suscribe al lobby automáticamente
-4. Seleccionar un sorteo de la lista o ingresar el código manualmente
+1. **Ingresar la URL base** de GameRes (ej: `https://tu-servidor/`)
+2. En la pestaña principal, ingresar **usuario y clave**; el demo obtiene el token mediante `POST /api/Connection/Login`
+3. Clic en **Iniciar sesión y conectar** — la app se conecta y se suscribe al lobby automáticamente
+4. Seleccionar un sorteo de la lista o ingresar manualmente su código o GID
 5. Observar el tablero, las bolas y los eventos en tiempo real
+
+La pestaña **Token** permite usar un JWT ya emitido o un Transaction Access Token `txa_`.
+La clave y el token se mantienen solo en memoria: no se guardan en storage, URL ni log de eventos.
+
+El botón **Refrescar** vuelve a solicitar el snapshot del lobby. Los GID con formato UUID
+se suscriben mediante `SubscribeToLotteryById`; los demás valores conservan el flujo
+existente mediante `SubscribeToLottery`.
+
+El lobby presenta primero el sorteo activo y después los próximos sorteos en espera. El contador
+solo muestra **En curso** cuando el estado autoritativo es `Activo`; una hora vencida que aún llegue
+en `Espera` se identifica como **Pendiente de actualización**.
 
 ---
 
@@ -83,7 +94,8 @@ Abrir `http://localhost:<puerto>` en el browser, ingresar la URL del hub y el to
 | `LobbyStateSnapshot` | Estado inicial del lobby |
 | `LotteryStateSnapshot` | Estado inicial del sorteo suscrito |
 | `BallDrawn` | Bola cantada en tiempo real |
-| `LotteryStatusChanged` | Cambio de estado de un sorteo |
+| `LobbyLotteryStatusChanged` | Cambio global utilizado para mantener actualizado el lobby |
+| `LotteryStatusChanged` | Cambio de estado del sorteo al que el cliente está suscrito |
 | `LotterySalesUpdated` | Actualización de ventas |
 | `LotteryPayoutsUpdated` | Actualización de premios |
 | `LineWinnersUpdated` | Ganadores de línea |
@@ -114,7 +126,10 @@ npm install @microsoft/signalr
 
 Durante el desarrollo encontramos comportamientos que no estaban en la documentación oficial. Los más relevantes:
 
-- **`LotteryStatusChanged` es global** — el hub emite este evento para *todos* los sorteos del sistema, no solo los suscritos. Hay que filtrar por `lotteryCode`.
+- **Los cambios de estado están separados por alcance** — `LobbyLotteryStatusChanged` mantiene el lobby y `LotteryStatusChanged` corresponde al sorteo suscrito.
+- **Las suscripciones devuelven acknowledgement** — la UI solo debe declararse suscrita después de validar la confirmación del servidor.
+- **El snapshot reemplaza el estado local** — permite entrar o reingresar durante un sorteo y reconstruir todas las bolas, ventas y jugadas emitidas antes de la suscripción.
+- **Ventas y ganadores son autoritativos** — los totales no se acumulan en el cliente y las tarjetas se deduplican por patrón.
 - **`lotteryDate` llega sin timezone** — el resto de fechas incluyen offset. Implementamos detección automática del offset del servidor a partir del campo `changedAt`. Ver [CASO-001 en la bitácora](BITACORA.md).
 - **CORS debe estar habilitado** en el backend para el origen de la UI.
 

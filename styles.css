@@ -56,6 +56,47 @@ body {
 .conexion-card h1 { font-size: 28px; font-weight: 700; }
 .subtitulo { color: var(--text-dim); margin-bottom: 8px; }
 
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-top: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.auth-tab {
+  border: 0;
+  border-radius: 7px;
+  padding: 9px 12px;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-tab:hover { color: var(--text); }
+.auth-tab.activo { background: var(--surface2); color: var(--text); }
+.auth-tab:focus-visible { outline: 2px solid var(--primary-h); outline-offset: 2px; }
+
+.auth-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.auth-ayuda {
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.auth-ayuda code { color: var(--primary-h); }
+
 label { font-size: 12px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .05em; }
 
 input, textarea {
@@ -159,6 +200,12 @@ input:focus, textarea:focus {
 
 .sidebar h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-dim); }
 
+.lobby-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .lista-sorteos { display: flex; flex-direction: column; gap: 8px; }
 
 .sorteo-item {
@@ -224,7 +271,7 @@ input:focus, textarea:focus {
 }
 
 .input-row { display: flex; gap: 8px; }
-.input-row input { max-width: 200px; }
+.input-row input { max-width: 330px; }
 
 /* Sorteo header */
 .sorteo-header {
@@ -343,6 +390,37 @@ input:focus, textarea:focus {
   border-radius: 8px;
   padding: 10px 12px;
 }
+
+.jugada-card.jugada-ganadora {
+  border-color: #f4c84b;
+  box-shadow: 0 0 0 1px rgba(244, 200, 75, .18), 0 8px 22px rgba(0, 0, 0, .18);
+}
+
+.jugada-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.jugada-conteo {
+  min-width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #f4c84b;
+  color: #17191f;
+  font-size: 11px;
+  font-weight: 800;
+}
+.tarjetas-ganadoras { display: flex; flex-wrap: wrap; gap: 5px; margin: 7px 0; }
+.tarjeta-ganadora {
+  border: 1px solid rgba(244, 200, 75, .48);
+  border-radius: 999px;
+  background: rgba(244, 200, 75, .12);
+  color: #f7d96f;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.sin-ganadoras, .jugadas-vacio { color: var(--text-dim); font-size: 11px; }
+.jugadas-vacio { grid-column: 1 / -1; padding: 8px 0; }
 
 .jugada-nombre { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
 .jugada-stats { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--text-dim); }

@@ -17,12 +17,77 @@ App web demo para conectarse al hub SignalR `/lotteryHub` de `GameRes API` y vis
 | `Cancelada` | Badge rojo, se mueve a cerrados | pendiente |
 
 ### Comportamiento del hub
-- El hub envía `LotteryStatusChanged` para **todos** los sorteos del sistema, no solo los del `LobbyStateSnapshot` recibido. Eventos de códigos fuera del snapshot se ignoran en la UI (correcto).
+- `LobbyLotteryStatusChanged` publica los cambios globales necesarios para mantener actualizado el lobby.
+- `LotteryStatusChanged` se limita al sorteo al que el cliente se suscribió.
+- `SubscribeToLobby`, `SubscribeToLottery` y `SubscribeToLotteryById` devuelven un acknowledgement que debe confirmarse antes de declarar la suscripción activa.
 - Timezone confirmada del servidor: **UTC-4** (detectada de `changedAt`).
 
 ---
 
 ## Entradas
+
+### 2026-08-19 — Ventana autoritativa del lobby y contador por estado
+
+**Hallazgo QA:**
+- El snapshot mostraba sorteos antiguos en `Espera`, omitía el activo y tomaba diez elementos de una fuente de ventas con ordenamiento no autoritativo.
+- El demo mostraba `En curso` cuando la hora ya había pasado, aunque el estado continuara en `Espera`.
+
+**Correcciones:**
+- El backend combina los sorteos de hoy, como autoridad de estado/fecha, con el resumen de ventas y premios por GID.
+- La ventana publica primero el sorteo `Activo` y luego los próximos en `Espera`; excluye esperas vencidas y separa los cerrados recientes.
+- El demo ordena defensivamente el activo primero y solo muestra `En curso` cuando el estado es `Activo`.
+- Una hora vencida con estado `Espera` se presenta como `Pendiente de actualización`.
+
+### 2026-08-19 — Login interactivo para certificacion reproducible
+
+**Cambios aplicados:**
+- La pantalla inicial usa `Usuario y clave` como pestana principal.
+- El demo obtiene el token mediante `POST /api/Connection/Login` en la misma URL base de GameRes.
+- La pestana secundaria `Token` conserva el acceso con JWT o Transaction Access Token `txa_`.
+- La clave se limpia despues de cada intento y el token se mantiene solo en memoria; ninguno se escribe en storage, URL o log de eventos.
+- El manual de integracion SignalR se actualizo a la version 1.2 con ambos recorridos.
+
+**Pendiente de certificar en QA:**
+- Login con un usuario QA valido, conexion, lobby y suscripcion a un sorteo activo.
+- Verificacion visual de ambas pestanas en Chrome y Edge.
+
+### 2026-08-18 — Certificación local de entrada tardía, ventas y ganadores
+
+**Evidencia funcional:**
+- Se salió y volvió a entrar varias veces durante el sorteo `757365`.
+- Los snapshots recibidos con `18`, `30` y `34` bolas reconstruyeron inmediatamente todo el tablero.
+- El siguiente `BallDrawn` continuó desde la posición posterior sin perder ni duplicar bolas.
+- La primera carga de un sorteo con cuatro cartones mostró `4` y RD$20, igual que el Portal; se corrigió el conteo anterior que acumulaba el total y mostraba `8`.
+- Al cambiar de sorteo, bolas, ventas, monto y jugadas anteriores se reemplazan por el nuevo snapshot.
+
+**Mejora demostrativa:**
+- La sección `JUGADAS` procesa `firstLine`, `secondLine`, `cornerPlay`, `crossPlay` y `littleCrossPlay` desde el snapshot.
+- `LineWinnersUpdated` y `SpecialPlayWinnersUpdated` actualizan la presentación en vivo.
+- Cada patrón muestra tarjetas ganadoras, próximas a ganar, posiciones restantes y premio unitario cuando el servidor los informa.
+- Las listas se deduplican para tolerar snapshot, reconexión o eventos repetidos.
+
+**Validaciones técnicas:**
+- Sintaxis de `app.js` aprobada con Node.
+- El servidor estático entregó la versión nueva y registró ambos handlers de ganadores.
+- La certificación integral en QA permanece pendiente después de publicar GameRes y Portal.
+
+### 2026-08-18 — Suscripción por GID y recuperación de conexión
+
+**Cambios aplicados:**
+- El campo de suscripción acepta `lotteryCode` o `gameLotteryGid` (UUID).
+- Los UUID usan `SubscribeToLotteryById`; el flujo por código no cambia.
+- Se agregó refresco manual del lobby mediante una nueva suscripción.
+- Después de una reconexión se restauran el lobby y el sorteo seleccionado.
+- Los eventos `BallDrawn` y `LotteryCompleted` solo actualizan la vista si pertenecen al sorteo seleccionado.
+- Se evitan bolas duplicadas y se muestran errores de suscripción más comprensibles.
+- Se adoptó el contrato 1.1: acknowledgement de suscripciones y separación entre eventos de lobby y sorteo.
+- Al cambiar de sorteo se limpia todo el estado visual anterior y las ventas actualizan tanto el lobby como el detalle seleccionado.
+
+**Pendiente de validar con el ambiente:**
+- Confirmar el payload real de los endpoints HTTP de carrusel antes de usarlos como fuente principal del lobby.
+- Confirmar que el `LotteryStateSnapshot` devuelto al suscribirse por GID siempre incluya `lotteryCode`, necesario para `UnsubscribeFromLottery`.
+
+---
 
 ### YYYY-MM-DD — Inicio del proyecto
 
